@@ -1,0 +1,4 @@
+(fp_lib_table
+  (version 7)
+  (lib (name "UPET-Wifi")(type "KiCad")(uri "${KIPRJMOD}/UPET-Wifi.pretty")(options "")(descr ""))
+)
