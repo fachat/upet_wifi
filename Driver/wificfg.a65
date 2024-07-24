@@ -15,8 +15,10 @@ link	.word 0
 
 start	lda #<welcom
 	ldy #>welcom
-	jmp txtout
+	jsr txtout
 
+	jsr uart_init
+	brk
 
 
 welcom	.asc TC_CLR, TC_DOWN, "welcome to the wifi configuration",TC_CR,TC_LF,0
@@ -35,4 +37,5 @@ end	rts
 	.)
 
 #include "upetspi.a65"
+#include "spiuart.a65"
 

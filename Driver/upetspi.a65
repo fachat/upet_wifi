@@ -7,6 +7,16 @@ SPI_CTRL	=SPIBASE + 0
 SPI_DATA	=SPIBASE + 1
 SPI_PEEK	=SPIBASE + 2	
 
+&spisel	
+	ldx #4		; device 4 = network port, SPI mode 0
+	.byt $2c
+&spidesel
+	ldx #<-1
+:	bit SPI_CTRL
+	bmi :-
+	stx SPI_CTRL
+	rts
+
 &spipeek
 	lda SPI_PEEK
 	rts
