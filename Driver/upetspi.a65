@@ -1,0 +1,31 @@
+
+	.(
+
+SPIBASE		=$e808
+
+SPI_CTRL	=SPIBASE + 0
+SPI_DATA	=SPIBASE + 1
+SPI_PEEK	=SPIBASE + 2	
+
+&spipeek
+	lda SPI_PEEK
+	rts
+
+&spitx
+	bit SPI_CTRL
+	bvs spitx
+	sta SPI_DATA
+	rts
+
+&spirx
+	lda #$ff
+&spirxtx
+	bit SPI_CTRL
+	bvs spirxtx
+	sta SPI_DATA
+:	bit SPI_CTRL
+	bmi :-
+	lda SPI_PEEK
+	rts
+	.)
+

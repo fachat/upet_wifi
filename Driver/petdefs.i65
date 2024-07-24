@@ -1,0 +1,18 @@
+
+
+BSOUT		=$ffd2
+
+
+TC_HOME		=19
+TC_CLR		=19+128
+TC_CR		=13
+TC_LF		=10
+TC_DOWN		=17
+TC_UP		=17+128
+TC_RIGHT	=29
+TC_LEFT		=29+128
+TC_DEL		=20
+TC_INS		=20+128
+
+
+

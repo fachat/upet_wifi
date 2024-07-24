@@ -1,0 +1,38 @@
+
+
+
+#include "petdefs.i65"
+
+zp	=$fb
+
+	.word $0401
+	*=$0401
+	.word link
+	.word 10		; line number
+	.byt $9e, "1040", 0	; SYS line
+link	.word 0
+	.dsb 1040-*
+
+start	lda #<welcom
+	ldy #>welcom
+	jmp txtout
+
+
+
+welcom	.asc TC_CLR, TC_DOWN, "welcome to the wifi configuration",TC_CR,TC_LF,0
+
+
+txtout	.(
+	sta zp
+	sty zp+1
+	ldy #0
+l	lda (zp),y
+	beq end
+	jsr BSOUT
+	iny
+	bne l
+end	rts
+	.)
+
+#include "upetspi.a65"
+
