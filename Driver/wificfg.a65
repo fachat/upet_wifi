@@ -17,9 +17,17 @@ start	lda #<welcom
 	ldy #>welcom
 	jsr txtout
 
-	jsr uart_init
-	brk
+	lda #3
+	;sta $e803
 
+	jsr uart_init
+	bcs @err
+	jsr uart_start
+:	jsr uart_handle
+	jmp :-
+	rts
+
+@err	brk
 
 welcom	.asc TC_CLR, TC_DOWN, "welcome to the wifi configuration",TC_CR,TC_LF,0
 

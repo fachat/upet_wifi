@@ -63,8 +63,62 @@ XTALMULT	=1
 
 	.(
 
+&uart_handle .(
+inc $8003
+	ldx #UART_RXLVL
+	jsr uart_rd
+	tay		; number of bytes in rx FIFO
+	beq norx
+
+;	ldx #UART_LSR
+;	jsr uart_rd
+;	lsr
+;	bcc norx
+;	ldy #1
+
+	; read buffer
+	lda chan
+	lsr
+	php
+inc $8002
+	jsr spisel	; uses XR only
+	lda #UART_DATA
+	asl		; CH1
+	plp
+	rol		; CH0
+	asl		; unused bit
+	ora #$80	; read
+	jsr spitx
+:	jsr spirx
+	ldx cnt
+	and #%00111111
+	sta $8000+80,x
+	inc cnt
+	dey
+	bne :-
+	jsr spidesel	; only uses X
+
+norx	; check send
+inc $8006
+	ldx #UART_LSR
+	jsr uart_rd
+	tay
+	bmi err
+	and #%00100000	; check THR empty
+	
+	; TODO load up to 64 bytes into FIFO
+inc $8007
+	clc
+	rts
+err
+inc $8005
+	sec
+	rts
+	.)
+
+
 &uart_init .(
-	lda #0
+	lda #0		; AT command channel of ESP-C3-WROOM-02
 	sta chan
 
 	; analog copy of UART init in GeckOS ser_uart.a65
@@ -94,8 +148,9 @@ inc $8000
 	
 	and #$f0
 	cmp #$f0
-nodev_x	bne nodev
-
+nodev_x	beq :+
+	jmp nodev
+:
 	ldx #UART_MCR
 	tya
 	jsr uart_wr
@@ -116,7 +171,7 @@ nodev_x	bne nodev
 	bne dev8250
 
 	ldx #UART_FCR
-	lda #1
+	lda #1		; enable FIFO
 	jsr uart_wr
 
 	ldx #UART_IIR
@@ -134,23 +189,21 @@ nodev_x	bne nodev
 	bcc dev16550
 
 	ldx #UART_LCR
-	lda #%1000000
+	lda #%10000000
 	jsr uart_wr
 
 	ldx #UART_DLL
-	ldy #14*2		; 9600 baud
+	ldy #18*2		; 115200 baud
 	lda divisor,y
+sta $8008
 	jsr uart_wr
 	ldx #UART_DLH
 	lda divisor+1,y
+sta $8009
 	jsr uart_wr
 
 	ldx #UART_LCR
-	lda #%00000011
-	jsr uart_wr
-
-	ldx #UART_FCR
-	lda #7			; no FIFO enable and clear FIFOs, trigger lvl=1
+	lda #%00000011		; 8N1
 	jsr uart_wr
 
 	ldx #UART_IER
@@ -162,7 +215,6 @@ nodev_x	bne nodev
 	and #%00001100
 	ldx #UART_MCR
 	jsr uart_wr
-
 	clc
 	rts
 
@@ -179,8 +231,35 @@ dev16550
 	rts
 	.)
 
+&uart_start .(
+	; switch receiver on
+	ldx #UART_MCR
+	jsr uart_rd
+	ora #%00000011		; activate DTR, RTS
+	ldx #UART_MCR
+	jsr uart_wr
+
+	; send AT
+	ldx #UART_DATA
+	lda #"A"
+	jsr uart_wr
+	ldx #UART_DATA
+	lda #"T"
+	jsr uart_wr
+	ldx #UART_DATA
+	lda #13
+	jsr uart_wr
+	ldx #UART_DATA
+	lda #10
+	jsr uart_wr
+	clc
+	rts
+
+	.)
+
 	; In: XR=reg number, chan=channel, A=data
 &uart_wr .(
+	sei
 	pha
 	lda chan
 	lsr
@@ -194,12 +273,15 @@ dev16550
 	jsr spitx
 	pla
 	jsr spitx
-	jmp spidesel
+	jsr spidesel
+	cli
+	rts
 	.)
 
 	; In: XR=reg number, chan=channel
 	; Out: A=value
 &uart_rd .(
+	sei
 	lda chan
 	lsr
 	php
@@ -216,12 +298,15 @@ inc $8001
 inc $8001
 	jsr spirx
 inc $8001
-	jmp spidesel	; only uses X
+	jsr spidesel	; only uses X
+	cli
+	rts
 	.)
 
 /* 
  * 16550 divisor values for BAUD rates ?, 50, 75, 110, 134.5, 150, 
  * 300, 600, 1200, 1800, 2400, 3600, 4800, 7200, 9600, 19200
+ * 38400, 56000, 115200
  */
 divisor .word   -1, 2304 * XTALMULT, 1536 * XTALMULT, 1047 * XTALMULT
         .word   857 * XTALMULT, 768 * XTALMULT, 384 * XTALMULT
@@ -229,6 +314,9 @@ divisor .word   -1, 2304 * XTALMULT, 1536 * XTALMULT, 1047 * XTALMULT
         .word   64 * XTALMULT, 48 * XTALMULT, 32 * XTALMULT
         .word   24 * XTALMULT, 16 * XTALMULT, 12 * XTALMULT
         .word   6 * XTALMULT
+	.word 	3 * XTALMULT, 2 * XTALMULT, 1 * XTALMULT
 
 chan	.byt 0
+cnt	.byt 0
+
 	.)
