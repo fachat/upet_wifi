@@ -1,0 +1,272 @@
+
+	.(
+
+; The serial interface UART is a standard UART
+; This handles the two upet channels at base addres $e818 and $e828
+;
+UART		=$e818
+UART2		=$e828
+
+UARTDIFF	=UART2-UART
+
+; 
+; This is the register map:
+
+UART_DATA	=0	; send (THR) / receive (RHR) data reg
+UART_IER	=1	; interrupt enable reg
+UART_IIR	=2	; interrupt identification (Read only)
+UART_FCR	=2	; FIFO ctrl (Write only)
+UART_LCR	=3	; Line Control Reg
+UART_MCR	=4	; Modem Control Reg
+UART_LSR	=5	; Line Status Reg
+UART_MSR	=6	; Modem Status Reg
+UART_SCR	=7	; Scratchpad
+
+; alternate function regsiter - accessible when LCR[7:5]=100
+UART_AFR	=4
+
+; special function register - accessible if LCR.7=1 and LCR != 0xbf
+UART_DLL	=0	; Divisor Latch low
+UART_DLH	=1	; Divisor Latch high
+
+; enhanced registers - accessible if LCR = 0xbf
+UART_EFR	=2	; Enhanced Function Reg 
+UART_XON1	=4
+UART_XON2	=5
+UART_XOFF1	=6
+UART_XOFF2	=7
+
+;
+; clock multiplier
+XTALMULT	=1
+
+;-----------------------------------------------------------------
+&s0_handle .(
+	lda #0
+	sta err
+inc $8003
+rxloop	lda UART+UART_LSR
+	bmi rxerr
+	lsr
+	bcc dotx
+
+	lda UART+UART_DATA
+
+	ldy s0_rx_wp
+	sta (s0_bufp),y
+	iny
+	cpy s0_rx_rp
+	beq rxoverflow
+	sty s0_rx_wp
+	; always
+	bne rxloop
+
+	;----
+rxerr	sta err
+	lda UART+UART_DATA	; advance fifo rd ptr to clear rx err
+	bra dotx
+
+rxoverflow
+	rol err		; C is 1 due to compare equal
+
+	;----
+dotx	lda UART+UART_LSR
+	and #%00100000	; is THR empty?
+	beq notx
+
+	ldx #64
+	ldy s0_tx_rp
+txloop	cpy s0_tx_wp
+	beq endtx
+	lda (s0_bufp),y
+	sta UART+UART_DATA
+	iny
+	dex
+	bne txloop	; up to 64 bytes into FIFO
+endtx	sty s0_tx_rp
+notx
+	clc
+	rts
+err
+inc $8005
+	sec
+	rts
+	.)
+
+;-----------------------------------------------------------------
+&s1_handle .(
+	lda #0
+	sta err
+inc $8003
+rxloop	lda UART2+UART_LSR
+	bmi rxerr
+	lsr
+	bcc dotx
+
+	lda UART2+UART_DATA
+
+	ldy s1_rx_wp
+	sta (s1_bufp),y
+	iny
+	cpy s1_rx_rp
+	beq rxoverflow
+	sty s1_rx_wp
+	; always
+	bne rxloop
+
+	;----
+rxerr	sta err
+	lda UART2+UART_DATA	; advance fifo rd ptr to clear rx err
+	bra dotx
+
+rxoverflow
+	rol err		; C is 1 due to compare equal
+
+	;----
+dotx	lda UART2+UART_LSR
+	and #%00100000	; is THR empty?
+	beq notx
+
+	ldx #64
+	ldy s1_tx_rp
+txloop	cpy s1_tx_wp
+	beq endtx
+	lda (s1_bufp),y
+	sta UART2+UART_DATA
+	iny
+	dex
+	bne txloop	; up to 64 bytes into FIFO
+endtx	sty s1_tx_rp
+notx
+	clc
+	rts
+err
+inc $8005
+	sec
+	rts
+	.)
+
+;-----------------------------------------------------------------
+&s0_init
+	ldx #0
+	.byt $2c
+&s1_init .(
+	ldx #UARTDIFF
+
+	ldy UART+UART_MCR,x
+inc $8000
+	lda #$10		; enable loopback, DTR,RTS high
+	sta UART+UART_MCR,x
+inc $8000
+
+	lda UART+UART_MSR,x
+	and #$30		; are DSR/CTS high?
+	bne nodev_x
+inc $8000
+	
+	lda #$1f		; DTR,RTS low
+	sta UART+UART_MCR,x
+inc $8000
+
+	lda UART+UART_MSR,x
+inc $8000
+	
+	and #$30
+	cmp #$30		; are DSR,CTS low?
+nodev_x	beq :+
+	jmp nodev
+:
+	; restore MCR:
+	sty UART+UART_MCR,x
+
+	; check scratchpad register
+	lda #%10101010
+	sta UART+UART_SCR,x
+	cmp UART+UART_SCR,x
+	bne dev8250
+	lsr
+	sta UART+UART_SCR,x
+	cmp UART+UART_SCR,x
+	bne dev8250
+
+	lda #1		; enable FIFO
+	sta UART+UART_FCR,x
+
+	ldy UART+UART_IIR,x
+
+	lda #0
+	sta UART+UART_FCR,x
+
+	tya
+	asl
+	bcc dev16450
+	asl
+	bcc dev16550
+
+	lda #%10000000
+	sta UART+UART_LCR
+
+	ldy #18*2		; 115200 baud
+	lda divisor,y
+sta $8008
+	sta UART+UART_DLL,x
+	lda divisor+1,y
+sta $8009
+	sta UART+UART_DLH,x
+
+	lda #%00000011		; 8N1
+	sta UART+UART_LCR,x
+
+	lda #0			; disable ints (for now)
+	sta UART+UART_IER,x
+
+	lda UART+UART_MCR,x
+	and #%00001100
+	sta UART+UART_MCR,x
+	clc
+	rts
+
+nodev	ldx #0
+	.byt $2c
+dev8250	ldx #1
+	.byt $2c
+dev16450
+	ldx #2
+	.byt $2c
+dev16550
+	ldx #3
+	sec
+	rts
+	.)
+
+;-----------------------------------------------------------------
+&s0_start
+	ldx #0
+	.byt $2c
+&s1_start .(
+	ldx #UARTDIFF
+	; switch receiver on
+	lda UART+UART_MCR,x
+	ora #%00000011		; activate DTR, RTS
+	sta UART+UART_MCR,x
+	rts
+
+	.)
+
+;-----------------------------------------------------------------
+/* 
+ * 16550 divisor values for BAUD rates ?, 50, 75, 110, 134.5, 150, 
+ * 300, 600, 1200, 1800, 2400, 3600, 4800, 7200, 9600, 19200
+ * 38400, 56000, 115200
+ */
+divisor .word   -1, 2304 * XTALMULT, 1536 * XTALMULT, 1047 * XTALMULT
+        .word   857 * XTALMULT, 768 * XTALMULT, 384 * XTALMULT
+        .word   192 * XTALMULT, 96 * XTALMULT
+        .word   64 * XTALMULT, 48 * XTALMULT, 32 * XTALMULT
+        .word   24 * XTALMULT, 16 * XTALMULT, 12 * XTALMULT
+        .word   6 * XTALMULT
+	.word 	3 * XTALMULT, 2 * XTALMULT, 1 * XTALMULT
+
+err	.byt 0
+
+	.)

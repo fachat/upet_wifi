@@ -17,6 +17,8 @@
 ; 
 ; This is the register map:
 
+	.(
+
 UART_DATA	=0	; send (THR) / receive (RHR) data reg
 UART_IER	=1	; interrupt enable reg
 UART_IIR	=2	; interrupt identification (Read only)
@@ -60,8 +62,6 @@ UART_TLR	=7	; Trigger Level Reg
 ;
 ; clock multiplier
 XTALMULT	=1
-
-	.(
 
 &uart_handle .(
 inc $8003
