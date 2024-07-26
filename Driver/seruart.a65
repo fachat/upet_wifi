@@ -41,7 +41,7 @@ UART_XOFF2	=7
 XTALMULT	=1
 
 ;-----------------------------------------------------------------
-&s0_handle .(
+&ser0_handle .(
 	lda #0
 	sta err
 inc $8003
@@ -53,7 +53,7 @@ rxloop	lda UART+UART_LSR
 	lda UART+UART_DATA
 
 	ldy s0_rx_wp
-	sta (s0_bufp),y
+	sta s0_rx_buf,y
 	iny
 	cpy s0_rx_rp
 	beq rxoverflow
@@ -78,7 +78,7 @@ dotx	lda UART+UART_LSR
 	ldy s0_tx_rp
 txloop	cpy s0_tx_wp
 	beq endtx
-	lda (s0_bufp),y
+	lda s0_tx_buf,y
 	sta UART+UART_DATA
 	iny
 	dex
@@ -87,14 +87,15 @@ endtx	sty s0_tx_rp
 notx
 	clc
 	rts
-err
 inc $8005
 	sec
 	rts
 	.)
 
 ;-----------------------------------------------------------------
-&s1_handle .(
+
+#ifndef S0_ONLY
+&ser1_handle .(
 	lda #0
 	sta err
 inc $8003
@@ -106,7 +107,7 @@ rxloop	lda UART2+UART_LSR
 	lda UART2+UART_DATA
 
 	ldy s1_rx_wp
-	sta (s1_bufp),y
+	sta s1_rx_buf,y
 	iny
 	cpy s1_rx_rp
 	beq rxoverflow
@@ -131,7 +132,7 @@ dotx	lda UART2+UART_LSR
 	ldy s1_tx_rp
 txloop	cpy s1_tx_wp
 	beq endtx
-	lda (s1_bufp),y
+	lda s1_tx_buf,y
 	sta UART2+UART_DATA
 	iny
 	dex
@@ -140,18 +141,21 @@ endtx	sty s1_tx_rp
 notx
 	clc
 	rts
-err
 inc $8005
 	sec
 	rts
 	.)
+#endif
 
 ;-----------------------------------------------------------------
-&s0_init
-	ldx #0
-	.byt $2c
-&s1_init .(
+
+#ifndef S0_ONLY
+&ser1_init
 	ldx #UARTDIFF
+	.byt $2c
+#endif
+&ser0_init .(
+	ldx #0
 
 	ldy UART+UART_MCR,x
 inc $8000
@@ -177,7 +181,8 @@ nodev_x	beq :+
 	jmp nodev
 :
 	; restore MCR:
-	sty UART+UART_MCR,x
+	tya
+	sta UART+UART_MCR,x
 
 	; check scratchpad register
 	lda #%10101010
@@ -240,11 +245,14 @@ dev16550
 	.)
 
 ;-----------------------------------------------------------------
-&s0_start
-	ldx #0
-	.byt $2c
-&s1_start .(
+
+#ifndef S0_ONLY
+&ser1_start
 	ldx #UARTDIFF
+	.byt $2c
+#endif
+&ser0_start .(
+	ldx #0
 	; switch receiver on
 	lda UART+UART_MCR,x
 	ora #%00000011		; activate DTR, RTS

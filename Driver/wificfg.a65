@@ -20,10 +20,14 @@ start	lda #<welcom
 	lda #3
 	;sta $e803
 
-	jsr uart_init
+	jsr spiuart0_init
 	bcs @err
-	jsr uart_start
-:	jsr uart_handle
+	jsr spiuart_start
+:	jsr spiuart_handle
+
+	lda u0_rx_wp
+	sta u0_rx_rp
+
 	jmp :-
 	rts
 
@@ -43,6 +47,15 @@ l	lda (zp),y
 	bne l
 end	rts
 	.)
+
+; definitions for the UART buffers
+u0_rx_wp	.byt 0
+u0_rx_rp	.byt 0
+u0_tx_wp	.byt 0
+u0_tx_rp	.byt 0
+
+u0_rx_buf	=$8100
+u0_tx_buf	=$8200
 
 #include "upetspi.a65"
 #include "spiuart.a65"

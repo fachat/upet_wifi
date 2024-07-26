@@ -63,23 +63,13 @@ UART_TLR	=7	; Trigger Level Reg
 ; clock multiplier
 XTALMULT	=1
 
-&uart_handle .(
-inc $8003
-	ldx #UART_RXLVL
-	jsr uart_rd
-	tay		; number of bytes in rx FIFO
-	beq norx
 
-;	ldx #UART_LSR
-;	jsr uart_rd
-;	lsr
-;	bcc norx
-;	ldy #1
+;-----------------------------------------------------------------
 
-	; read buffer
+prep_cmd .(
 	lda chan
 	lsr
-	php
+	php		; channel into carry
 inc $8002
 	jsr spisel	; uses XR only
 	lda #UART_DATA
@@ -87,37 +77,97 @@ inc $8002
 	plp
 	rol		; CH0
 	asl		; unused bit
-	ora #$80	; read
-	jsr spitx
-:	jsr spirx
-	ldx cnt
-	and #%00111111
-	sta $8000+80,x
-	inc cnt
-	dey
-	bne :-
-	jsr spidesel	; only uses X
+	rts
+	.)
 
-norx	; check send
-inc $8006
+&spiuart_handle .(
 	ldx #UART_LSR
 	jsr uart_rd
 	tay
-	bmi err
+	bmi rxerr
+
+inc $8003
+	ldx #UART_RXLVL
+	jsr uart_rd
+	tay		; number of bytes in rx FIFO
+	beq dotx
+	sta cnt
+
+	; read buffer
+	jsr prep_cmd
+	ora #$80	; read
+	jsr spitx
+
+rxloop	jsr spirx
+
+        ldy u0_rx_wp
+        sta u0_rx_buf,y
+        iny
+        cpy u0_rx_rp
+        beq rxoverflow
+        sty u0_rx_wp
+
+	dec cnt
+	bne rxloop
+
+	jsr spidesel	; only uses X
+	bra dotx
+
+rxerr	sta err
+	ldx #UART_DATA
+	jsr uart_rd	; clr error by reading byte
+	bra dotx
+
+rxoverflow
+	rol err		; c is one due to compare equal
+
+dotx	; check send
+	; TODO: check TXLVL instead
+inc $8006
+	ldx #UART_LSR
+	jsr uart_rd
 	and #%00100000	; check THR empty
-	
-	; TODO load up to 64 bytes into FIFO
+	beq notx
+
+	; write buffer
+	jsr prep_cmd
+	jsr spitx
+
 inc $8007
+        ldx #64
+	stx cnt
+        ldy u0_tx_rp
+txloop  cpy u0_tx_wp
+        beq endtx
+        lda u0_tx_buf,y
+	jsr spitx
+        iny
+        dec cnt
+        bne txloop      ; up to 64 bytes into FIFO
+endtx   sty u0_tx_rp
+
+	jsr spidesel
+notx
 	clc
 	rts
-err
+
+	
 inc $8005
 	sec
 	rts
 	.)
 
+	; set the channel for any following spiuart_* call
+&spiuart_setchan .(
+	and #1
+	sta chan
+	rts
+	.)
 
-&uart_init .(
+&spiuart1_init 
+	lda #1
+	.byt $2c
+&spiuart0_init .(
 	lda #0		; AT command channel of ESP-C3-WROOM-02
 	sta chan
 
@@ -231,7 +281,7 @@ dev16550
 	rts
 	.)
 
-&uart_start .(
+&spiuart_start .(
 	; switch receiver on
 	ldx #UART_MCR
 	jsr uart_rd
@@ -258,7 +308,7 @@ dev16550
 	.)
 
 	; In: XR=reg number, chan=channel, A=data
-&uart_wr .(
+uart_wr .(
 	sei
 	pha
 	lda chan
@@ -280,7 +330,7 @@ dev16550
 
 	; In: XR=reg number, chan=channel
 	; Out: A=value
-&uart_rd .(
+uart_rd .(
 	sei
 	lda chan
 	lsr
@@ -318,5 +368,6 @@ divisor .word   -1, 2304 * XTALMULT, 1536 * XTALMULT, 1047 * XTALMULT
 
 chan	.byt 0
 cnt	.byt 0
+err	.byt 0
 
 	.)
