@@ -41,33 +41,39 @@ UART_XOFF2	=7
 XTALMULT	=1
 
 ;-----------------------------------------------------------------
+
 &ser0_handle .(
 	lda #0
 	sta err
 inc $8003
+	ldy s0_rx_wp
+
 rxloop	lda UART+UART_LSR
+sta $8004
 	bmi rxerr
 	lsr
-	bcc dotx
+	bcc endrx
 
 	lda UART+UART_DATA
 
-	ldy s0_rx_wp
 	sta s0_rx_buf,y
 	iny
 	cpy s0_rx_rp
 	beq rxoverflow
-	sty s0_rx_wp
+
 	; always
+;bra endrx
 	bne rxloop
 
 	;----
 rxerr	sta err
 	lda UART+UART_DATA	; advance fifo rd ptr to clear rx err
-	bra dotx
+	bra endrx
 
 rxoverflow
 	rol err		; C is 1 due to compare equal
+
+endrx	sty s0_rx_wp
 
 	;----
 dotx	lda UART+UART_LSR

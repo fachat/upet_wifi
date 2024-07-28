@@ -1,11 +1,62 @@
 
-	.(
+
+
+#define	SPISEL()			\
+	ldx #4				:\
+	stx SPI_CTRL
+
+#define	SPIDESEL()			\
+	ldx #<-1			:\
+:	bit SPI_CTRL			:\
+	bmi :-				:\
+	stx SPI_CTRL
+
+#define	SPIDESELRX()			\
+	ldx #<-1			:\
+	stx SPI_CTRL
+
+#define	SPITX1ST()			\
+	sta SPI_DATA
+
+#define	SPITX()				\
+:	bit SPI_CTRL			:\
+	bmi :-				:\
+	sta SPI_DATA
+
+; RX1ST, RX, and RXLAST work together to interleave
+; spi data transfer with processing
+#define	SPIRX1ST()			\
+	ldx #<-1			:\
+	stx SPI_DATA			:\
+:	bit SPI_CTRL			:\
+	bmi :-				:\
+	lda SPI_DATA
+
+#define	SPIRX()				:\
+:	bit SPI_CTRL			:\
+	bmi :-				:\
+	lda SPI_DATA		; automatically triggers next transfer
+
+#define	SPIRXLAST()			:\
+:	bit SPI_CTRL			:\
+	bmi :-				:\
+	lda SPI_PEEK	
+	
+#define	SPIRXSINGLE()			\
+	ldx #<-1			:\
+	stx SPI_DATA			:\
+:	bit SPI_CTRL			:\
+	bmi :-				:\
+	lda SPI_PEEK
+
 
 SPIBASE		=$e808
 
 SPI_CTRL	=SPIBASE + 0
 SPI_DATA	=SPIBASE + 1
 SPI_PEEK	=SPIBASE + 2	
+
+	.(
 
 &spisel	
 	ldx #4		; device 4 = network port, SPI mode 0

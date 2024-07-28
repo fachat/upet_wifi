@@ -24,22 +24,115 @@ link	.word 0
 	.dsb 1040-*
 	.)
 
+	lda #3		; 17 MHz CPU operation
+	sta $e803
 
 	; init serial0 uart
 	jsr ser0_init
 	bcs exit
+	jsr ser0_start
 
 	; init SPI uart0
 	jsr spiuart0_init
 	bcs exit
+	jsr spiuart_start
 
 :	jsr ser0_handle
 	jsr spiuart_handle
-
 	bra :-
+
+	sei
+	.(
+
+UART		=$e818
+	
+UART_DATA       =0      ; send (THR) / receive (RHR) data reg
+UART_IER        =1      ; interrupt enable reg
+UART_IIR        =2      ; interrupt identification (Read only)
+UART_FCR        =2      ; FIFO ctrl (Write only)
+UART_LCR        =3      ; Line Control Reg
+UART_MCR        =4      ; Modem Control Reg
+UART_LSR        =5      ; Line Status Reg
+UART_MSR        =6      ; Modem Status Reg
+UART_SCR        =7      ; Scratchpad
+
+UART_TXLVL      =8      ; Transmit FIFO level
+UART_RXLVL      =9      ; Receive FIFO level
+
+	;-----------------------------------------------------------------
+	; direct copy wifi -> serial uart
+rxtxloop
+	.(
+next    ldx #UART_LSR<<3
+        jsr uart_rd
+        tay
+        bpl toser
+
+        ldx #UART_DATA<<3
+        jsr uart_rd     ; clr error by reading byte
+        bra next
+toser
+        ldx #UART_RXLVL<<3
+        jsr uart_rd
+        tay             ; number of bytes in rx FIFO
+        beq towifi
+        sta cnt
+
+        jsr spisel
+        ; read buffer
+        lda rcmd
+        ora #UART_DATA<<3
+        jsr spitx
+
+rxloop  jsr spirx
+
+	; directly store in tx fifo for output
+	sta UART+UART_DATA
+
+        dec cnt
+        bne rxloop
+
+        jsr spidesel    ; only uses X
+	.)
+towifi
+	;-----------------------------------------------------------------
+	; direct copy serial -> wifi uart
+	.(
+	lda UART+UART_LSR
+	lsr
+	bcc rxtxloop
+
+	jsr spisel
+	lda #UART_DATA<<3
+	ora wcmd
+	jsr spitx
+
+rxloop  lda UART+UART_LSR
+        bpl dotx
+        lda UART+UART_DATA      ; advance fifo rd ptr to clear rx err
+	bra rxloop
+dotx
+        lsr
+        bcc endrx
+
+        lda UART+UART_DATA
+
+	jsr spitx
+
+        bra rxloop
+
+endrx	jsr spidesel
+	.)
+
+	bra rxtxloop
+
+
+	.)
+	;-----------------------------------------------------------------
 
 exit	sec
 	brk
+
 
 	; transfer buffers and pointers
 	;

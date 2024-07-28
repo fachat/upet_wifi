@@ -70,36 +70,50 @@ prep_cmd .(
 	lda chan
 	lsr
 	php		; channel into carry
-inc $8002
-	jsr spisel	; uses XR only
-	lda #UART_DATA
+	;jsr spisel	; uses XR only
+	lda #0
 	asl		; CH1
 	plp
 	rol		; CH0
 	asl		; unused bit
+	sta wcmd
+	ora #$80
+	sta rcmd
 	rts
 	.)
 
 &spiuart_handle .(
-	ldx #UART_LSR
+	ldx #UART_LSR<<3
 	jsr uart_rd
 	tay
 	bmi rxerr
 
 inc $8003
-	ldx #UART_RXLVL
+	ldx #UART_RXLVL<<3
 	jsr uart_rd
 	tay		; number of bytes in rx FIFO
+;bra dotx
 	beq dotx
 	sta cnt
 
+	;jsr spisel
+	SPISEL()
 	; read buffer
-	jsr prep_cmd
-	ora #$80	; read
-	jsr spitx
+	lda rcmd
+	ora #UART_DATA<<3
+	;jsr spitx
+	SPITX1ST()
 
-rxloop	jsr spirx
-
+	SPIRX1ST()
+	bra rx2
+rxloop	;jsr spirx
+	dec cnt
+	bne rx1
+	; last one
+	SPIRXLAST()
+	bra rx2
+rx1	SPIRX()		; already triggers following rx
+rx2
         ldy u0_rx_wp
         sta u0_rx_buf,y
         iny
@@ -110,11 +124,12 @@ rxloop	jsr spirx
 	dec cnt
 	bne rxloop
 
-	jsr spidesel	; only uses X
+	;jsr spidesel	; only uses X
+	SPIDESEL()
 	bra dotx
 
 rxerr	sta err
-	ldx #UART_DATA
+	ldx #UART_DATA<<3
 	jsr uart_rd	; clr error by reading byte
 	bra dotx
 
@@ -124,19 +139,26 @@ rxoverflow
 dotx	; check send
 	; TODO: check TXLVL instead
 inc $8006
-	ldx #UART_LSR
+	ldx #UART_LSR<<3
 	jsr uart_rd
 	and #%00100000	; check THR empty
 	beq notx
 
+        ldy u0_tx_rp
+	cpy u0_tx_wp
+	beq notx
+
+	;jsr spisel
+	SPISEL()
 	; write buffer
-	jsr prep_cmd
-	jsr spitx
+	lda wcmd
+	ora #UART_DATA<<3
+	;jsr spitx
+	SPITX1ST()
 
 inc $8007
         ldx #64
 	stx cnt
-        ldy u0_tx_rp
 txloop  cpy u0_tx_wp
         beq endtx
         lda u0_tx_buf,y
@@ -146,7 +168,8 @@ txloop  cpy u0_tx_wp
         bne txloop      ; up to 64 bytes into FIFO
 endtx   sty u0_tx_rp
 
-	jsr spidesel
+	;jsr spidesel
+	SPIDESEL()
 notx
 	clc
 	rts
@@ -171,28 +194,30 @@ inc $8005
 	lda #0		; AT command channel of ESP-C3-WROOM-02
 	sta chan
 
+	jsr prep_cmd
+
 	; analog copy of UART init in GeckOS ser_uart.a65
-	ldx #UART_MCR
+	ldx #UART_MCR<<3
 	jsr uart_rd
 	tay
 inc $8000
-	ldx #UART_MCR
+	ldx #UART_MCR<<3
 	lda #$10		; enable loopback
 	jsr uart_wr
 inc $8000
 
-	ldx #UART_MSR
+	ldx #UART_MSR<<3
 	jsr uart_rd
 	and #$30
 	bne nodev_x
 inc $8000
 	
-	ldx #UART_MCR
+	ldx #UART_MCR<<3
 	lda #$1f
 	jsr uart_wr
 inc $8000
 
-	ldx #UART_MSR
+	ldx #UART_MSR<<3
 	jsr uart_rd
 inc $8000
 	
@@ -201,34 +226,34 @@ inc $8000
 nodev_x	beq :+
 	jmp nodev
 :
-	ldx #UART_MCR
+	ldx #UART_MCR<<3
 	tya
 	jsr uart_wr
 
-	ldx #UART_SCR
+	ldx #UART_SCR<<3
 	lda #%10101010
 	jsr uart_wr
-	ldx #UART_SCR
+	ldx #UART_SCR<<3
 	jsr uart_rd
 	cmp #%10101010
 	bne dev8250
 	lsr
-	ldx #UART_SCR
+	ldx #UART_SCR<<3
 	jsr uart_wr
-	ldx #UART_SCR
+	ldx #UART_SCR<<3
 	jsr uart_rd
 	cmp #%01010101
 	bne dev8250
 
-	ldx #UART_FCR
+	ldx #UART_FCR<<3
 	lda #1		; enable FIFO
 	jsr uart_wr
 
-	ldx #UART_IIR
+	ldx #UART_IIR<<3
 	jsr uart_rd
 	tay
 
-	ldx #UART_FCR
+	ldx #UART_FCR<<3
 	lda #0
 	jsr uart_wr
 
@@ -238,32 +263,32 @@ nodev_x	beq :+
 	asl
 	bcc dev16550
 
-	ldx #UART_LCR
+	ldx #UART_LCR<<3
 	lda #%10000000
 	jsr uart_wr
 
-	ldx #UART_DLL
+	ldx #UART_DLL<<3
 	ldy #18*2		; 115200 baud
 	lda divisor,y
 sta $8008
 	jsr uart_wr
-	ldx #UART_DLH
+	ldx #UART_DLH<<3
 	lda divisor+1,y
 sta $8009
 	jsr uart_wr
 
-	ldx #UART_LCR
+	ldx #UART_LCR<<3
 	lda #%00000011		; 8N1
 	jsr uart_wr
 
-	ldx #UART_IER
+	ldx #UART_IER<<3
 	lda #0			; disable ints (for now)
 	jsr uart_wr
 
-	ldx UART_MCR
+	ldx UART_MCR<<3
 	jsr uart_rd
 	and #%00001100
-	ldx #UART_MCR
+	ldx #UART_MCR<<3
 	jsr uart_wr
 	clc
 	rts
@@ -282,24 +307,26 @@ dev16550
 	.)
 
 &spiuart_start .(
+	jsr prep_cmd
+
 	; switch receiver on
-	ldx #UART_MCR
+	ldx #UART_MCR<<3
 	jsr uart_rd
 	ora #%00000011		; activate DTR, RTS
-	ldx #UART_MCR
+	ldx #UART_MCR<<3
 	jsr uart_wr
 
 	; send AT
-	ldx #UART_DATA
+	ldx #UART_DATA<<3
 	lda #"A"
 	jsr uart_wr
-	ldx #UART_DATA
+	ldx #UART_DATA<<3
 	lda #"T"
 	jsr uart_wr
-	ldx #UART_DATA
+	ldx #UART_DATA<<3
 	lda #13
 	jsr uart_wr
-	ldx #UART_DATA
+	ldx #UART_DATA<<3
 	lda #10
 	jsr uart_wr
 	clc
@@ -308,48 +335,35 @@ dev16550
 	.)
 
 	; In: XR=reg number, chan=channel, A=data
-uart_wr .(
-	sei
+&uart_wr .(
 	pha
-	lda chan
-	lsr
-	php
 	txa
-	jsr spisel
-	asl		; CH1
-	plp
-	rol		; CH0
-	asl		; unused bit
-	jsr spitx
+	ora wcmd
+	;jsr spisel
+	SPISEL()
+	;jsr spitx
+	SPITX1ST()
 	pla
-	jsr spitx
-	jsr spidesel
-	cli
+	;jsr spitx
+	SPITX()
+	;jsr spidesel
+	SPIDESEL()
 	rts
 	.)
 
 	; In: XR=reg number, chan=channel
 	; Out: A=value
-uart_rd .(
-	sei
-	lda chan
-	lsr
-	php
+&uart_rd .(
 	txa
-inc $8001
-	jsr spisel
-	asl		; CH1
-	plp
-	rol		; CH0
-	asl		; unused bit
-	ora #$80	; read
-inc $8001
-	jsr spitx
-inc $8001
-	jsr spirx
-inc $8001
-	jsr spidesel	; only uses X
-	cli
+	ora rcmd
+	;jsr spisel
+	SPISEL()
+	;jsr spitx
+	SPITX1ST()
+	;jsr spirx
+	SPIRXSINGLE()
+	;jsr spidesel	; only uses X
+	SPIDESELRX()
 	rts
 	.)
 
@@ -367,7 +381,9 @@ divisor .word   -1, 2304 * XTALMULT, 1536 * XTALMULT, 1047 * XTALMULT
 	.word 	3 * XTALMULT, 2 * XTALMULT, 1 * XTALMULT
 
 chan	.byt 0
-cnt	.byt 0
+&cnt	.byt 0
 err	.byt 0
+&wcmd	.byt 0
+&rcmd	.byt 0
 
 	.)
