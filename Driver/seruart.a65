@@ -36,6 +36,10 @@ UART_XON2	=5
 UART_XOFF1	=6
 UART_XOFF2	=7
 
+; trigger levels
+UART_TCR	=6	; auto RTS/CTS trigger levels
+UART_TLR	=7	; int / dma trigger levels
+
 ;
 ; clock multiplier
 XTALMULT	=1
@@ -164,22 +168,17 @@ inc $8005
 	ldx #0
 
 	ldy UART+UART_MCR,x
-inc $8000
 	lda #$10		; enable loopback, DTR,RTS high
 	sta UART+UART_MCR,x
-inc $8000
 
 	lda UART+UART_MSR,x
 	and #$30		; are DSR/CTS high?
 	bne nodev_x
-inc $8000
 	
 	lda #$1f		; DTR,RTS low
 	sta UART+UART_MCR,x
-inc $8000
 
 	lda UART+UART_MSR,x
-inc $8000
 	
 	and #$30
 	cmp #$30		; are DSR,CTS low?
@@ -214,28 +213,26 @@ nodev_x	beq :+
 	asl
 	bcc dev16550
 
-	lda #%10000000
-	sta UART+UART_LCR
+	lda #%10000000		; enable DLL/DLH access
+	sta UART+UART_LCR,x
 
 	ldy #18*2		; 115200 baud
 	lda divisor,y
-sta $8008
 	sta UART+UART_DLL,x
 	lda divisor+1,y
-sta $8009
 	sta UART+UART_DLH,x
 
-	lda #%00000011		; 8N1
-	sta UART+UART_LCR,x
+;	lda #%00000011		; 8N1
+;	sta UART+UART_LCR,x
 
 	lda #0			; disable ints (for now)
 	sta UART+UART_IER,x
 
 	lda UART+UART_MCR,x
 	and #%00001100
-	sta UART+UART_MCR,x
-	clc
-	rts
+;	sta UART+UART_MCR,x
+
+	bra autoset
 
 nodev	ldx #0
 	.byt $2c
@@ -247,6 +244,28 @@ dev16450
 dev16550
 	ldx #3
 	sec
+	rts
+
+autoset	
+	ora #%01000000		; enable access to TCR
+	sta UART+UART_MCR,x
+
+	lda #$bf
+	sta UART+UART_LCR,x	; enable TCR + EFR access
+
+	lda #%00010000		; access TCR fifo levels
+	sta UART+UART_EFR,x
+
+	lda #%00111100		; trigger levels for auto-RTS
+	sta UART+UART_TCR,x
+
+	lda #%11000000		; auto-RTS/CTS
+	sta UART+UART_EFR,x
+
+	lda #%00000011		; 8N1
+	sta UART+UART_LCR,x
+
+	clc
 	rts
 	.)
 
