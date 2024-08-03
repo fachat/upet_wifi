@@ -70,7 +70,6 @@ prep_cmd .(
 	lda chan
 	lsr
 	php		; channel into carry
-	;jsr spisel	; uses XR only
 	lda #0
 	asl		; CH1
 	plp
@@ -88,43 +87,37 @@ prep_cmd .(
 	tay
 	bmi rxerr
 
-inc $8003
 	ldx #UART_RXLVL<<3
 	jsr uart_rd
 	tay		; number of bytes in rx FIFO
-;bra dotx
 	beq dotx
 	sta cnt
 
-	;jsr spisel
 	SPISEL()
 	; read buffer
 	lda rcmd
 	ora #UART_DATA<<3
-	;jsr spitx
-	SPITX1ST()
-
-	SPIRX1ST()
-	bra rx2
-rxloop	;jsr spirx
-	dec cnt
+	SPITX1ST()	; no wait for end
+	SPIRXINIT()
+	
+rxloop	dec cnt
 	bne rx1
+
 	; last one
-	SPIRXLAST()
+rxl	SPIRXLAST()
 	bra rx2
 rx1	SPIRX()		; already triggers following rx
-rx2
-        ldy u0_rx_wp
+
+rx2 	ldy u0_rx_wp
         sta u0_rx_buf,y
         iny
         cpy u0_rx_rp
         beq rxoverflow
         sty u0_rx_wp
 
-	dec cnt
+	lda cnt
 	bne rxloop
 
-	;jsr spidesel	; only uses X
 	SPIDESEL()
 	bra dotx
 
@@ -200,26 +193,21 @@ inc $8005
 	ldx #UART_MCR<<3
 	jsr uart_rd
 	tay
-inc $8000
 	ldx #UART_MCR<<3
 	lda #$10		; enable loopback
 	jsr uart_wr
-inc $8000
 
 	ldx #UART_MSR<<3
 	jsr uart_rd
 	and #$30
 	bne nodev_x
-inc $8000
 	
 	ldx #UART_MCR<<3
 	lda #$1f
 	jsr uart_wr
-inc $8000
 
 	ldx #UART_MSR<<3
 	jsr uart_rd
-inc $8000
 	
 	and #$f0
 	cmp #$f0
@@ -251,13 +239,7 @@ nodev_x	beq :+
 
 	ldx #UART_IIR<<3
 	jsr uart_rd
-	tay
 
-	ldx #UART_FCR<<3
-	lda #0
-	jsr uart_wr
-
-	tya
 	asl
 	bcc dev16450
 	asl
@@ -270,11 +252,9 @@ nodev_x	beq :+
 	ldx #UART_DLL<<3
 	ldy #18*2		; 115200 baud
 	lda divisor,y
-sta $8008
 	jsr uart_wr
 	ldx #UART_DLH<<3
 	lda divisor+1,y
-sta $8009
 	jsr uart_wr
 
 	ldx #UART_LCR<<3
@@ -331,8 +311,41 @@ dev16550
 	jsr uart_wr
 	clc
 	rts
-
 	.)
+
+	; set /RTS and /DTR outputs to the value of the C flag
+&spiuart_rtsdtr .(
+	php
+	ldx UART_MCR<<3
+	jsr uart_rd
+	plp
+	bcs doset
+	ora #%00000011
+	bne dostore
+doset	and #%11111100
+dostore	ldx #UART_MCR<<3
+	jsr uart_wr
+	clc
+	rts
+	.)
+
+	; set TX to break condition if C=1, clear otherwise
+&spiuart_brk .(
+	php
+	ldx UART_LCR<<3
+	jsr uart_rd
+	plp
+	bcc doclr
+	ora #%01000000
+	bne dostore
+doclr	and #%10111111
+dostore	ldx #UART_LCR<<3
+	jsr uart_wr
+	clc
+	rts
+	
+	.)
+
 
 	; In: XR=reg number, chan=channel, A=data
 &uart_wr .(
@@ -361,7 +374,8 @@ dev16550
 	;jsr spitx
 	SPITX1ST()
 	;jsr spirx
-	SPIRXSINGLE()
+	SPIRXINIT()
+	SPIRXLAST()
 	;jsr spidesel	; only uses X
 	SPIDESELRX()
 	rts

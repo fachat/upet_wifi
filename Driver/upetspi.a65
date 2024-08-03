@@ -25,12 +25,12 @@
 
 ; RX1ST, RX, and RXLAST work together to interleave
 ; spi data transfer with processing
-#define	SPIRX1ST()			\
-	ldx #<-1			:\
-	stx SPI_DATA			:\
+
+#define	SPIRXINIT()			\
 :	bit SPI_CTRL			:\
 	bmi :-				:\
-	lda SPI_DATA
+	ldx #<-1			:\
+	stx SPI_DATA
 
 #define	SPIRX()				:\
 :	bit SPI_CTRL			:\
@@ -41,14 +41,6 @@
 :	bit SPI_CTRL			:\
 	bmi :-				:\
 	lda SPI_PEEK	
-	
-#define	SPIRXSINGLE()			\
-	ldx #<-1			:\
-	stx SPI_DATA			:\
-:	bit SPI_CTRL			:\
-	bmi :-				:\
-	lda SPI_PEEK
-
 
 SPIBASE		=$e808
 

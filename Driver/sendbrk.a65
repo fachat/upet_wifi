@@ -1,0 +1,91 @@
+
+;
+; This little program short-cuts between the serial0 port
+; - i.e. the one with the real RS232 drivers and DB9 connector -A
+; and the programming port of the ESP-C3-WROOM on the wifi module.
+;
+; I.e. it transfers all data from the WROOM to the serial0 and
+; vice versa. This way the programming port of the WROOM
+; becomes virtually available on the serial0 port of the UltiPET.
+;
+; Unfortunately this does not (yet) work with the Micro-PET.
+; The Ultra-CPU board requires the UART+SIEC board for this.
+;
+
+#include "petdefs.i65"
+
+#if 0
+#define	ser_init	ser1_init
+#define	ser_start	ser1_start
+#define	ser_handle	ser1_handle
+#define	uart		UART2
+#else
+#define	ser_init	ser0_init
+#define	ser_start	ser0_start
+#define	ser_handle	ser0_handle
+#define	uart		UART
+#endif
+
+	.(
+	.word START
+	*=START
+	.word link
+	.word 10
+	.byt $9e, "1040", 0	; SYS line
+link	.word 0
+	.dsb 1040-*
+	.)
+
+	;lda #2		; 2 MHz CPU operation
+	;sta $e803
+
+	; init SPI uart0
+	jsr spiuart1_init
+	bcs exit
+
+	clc
+	jsr spiuart_rtsdtr
+
+	sec
+	jsr spiuart_brk
+
+	clc
+	rts
+	
+exit	sec
+	brk
+
+
+        ; transfer buffers and pointers
+        ;
+        ; note, that they need to be 256 bytes long each
+
+towifi_rp
+        .byt 0
+towifi_wp
+        .byt 0
+
+towifibuf       =$8100
+        ;.dsb 256
+
+fromwifi_rp
+        .byt 0
+fromwifi_wp
+        .byt 0
+
+fromwifibuf     =$8200
+        ;.dsb 256
+
+; definition for spi uart
+u0_tx_buf = towifibuf
+u0_tx_wp  = towifi_wp
+u0_tx_rp  = towifi_rp
+
+u0_rx_buf = fromwifibuf
+u0_rx_wp  = fromwifi_wp
+u0_rx_rp  = fromwifi_rp
+
+
+#include "upetspi.a65"
+#include "spiuart.a65"
+

@@ -14,6 +14,18 @@
 
 #include "petdefs.i65"
 
+#if 0
+#define	ser_init	ser1_init
+#define	ser_start	ser1_start
+#define	ser_handle	ser1_handle
+#define	uart		UART2
+#else
+#define	ser_init	ser0_init
+#define	ser_start	ser0_start
+#define	ser_handle	ser0_handle
+#define	uart		UART
+#endif
+
 	.(
 	.word START
 	*=START
@@ -24,27 +36,39 @@ link	.word 0
 	.dsb 1040-*
 	.)
 
-	lda #3		; 17 MHz CPU operation
+	lda #2		; 2 MHz CPU operation
 	sta $e803
 
 	; init serial0 uart
-	jsr ser0_init
+	jsr ser_init
 	bcs exit
-	jsr ser0_start
+	jsr ser_start
 
 	; init SPI uart0
 	jsr spiuart0_init
 	bcs exit
 	jsr spiuart_start
 
-:	jsr ser0_handle
+	sei
+
+#if 0
+:	jsr ser_handle
 	jsr spiuart_handle
 	bra :-
+#else
+	bra rxtxloop
 
-	sei
+#endif
+exit	sec
+	brk
+
+
+#include "upetspi.a65"
+
 	.(
 
 UART		=$e818
+UART2		=$e828
 	
 UART_DATA       =0      ; send (THR) / receive (RHR) data reg
 UART_IER        =1      ; interrupt enable reg
@@ -61,35 +85,46 @@ UART_RXLVL      =9      ; Receive FIFO level
 
 	;-----------------------------------------------------------------
 	; direct copy wifi -> serial uart
-rxtxloop
+&rxtxloop
 	.(
-next    ldx #UART_LSR<<3
-        jsr uart_rd
-        tay
-        bpl toser
+next    ;ldx #UART_LSR<<3
+        ;jsr uart_rd
+        ;tay
+        ;bpl toser
 
-        ldx #UART_DATA<<3
-        jsr uart_rd     ; clr error by reading byte
-        bra next
+	;; clear error on rx
+        ;ldx #UART_DATA<<3
+        ;jsr uart_rd     ; clr error by reading byte
+        ;bra next
 toser
         ldx #UART_RXLVL<<3
         jsr uart_rd
+sta $8027
+inc $8026
         tay             ; number of bytes in rx FIFO
         beq towifi
         sta cnt
 
-        jsr spisel
+	SPISEL()
+
         ; read buffer
         lda rcmd
         ora #UART_DATA<<3
-        jsr spitx
+	SPITX1ST()
+	SPIRXINIT()
 
-rxloop  jsr spirx
+rxloop  dec cnt
+	beq last
 
-	; directly store in tx fifo for output
-	sta UART+UART_DATA
+	SPIRX()
+	bra store
 
-        dec cnt
+last	SPIRXLAST()
+
+store	; directly store in tx fifo for output
+	sta uart+UART_DATA
+
+        lda cnt
         bne rxloop
 
         jsr spidesel    ; only uses X
@@ -98,40 +133,37 @@ towifi
 	;-----------------------------------------------------------------
 	; direct copy serial -> wifi uart
 	.(
-	lda UART+UART_LSR
+	lda uart+UART_LSR
 	lsr
 	bcc rxtxloop
 
-	jsr spisel
+	SPISEL()
 	lda #UART_DATA<<3
 	ora wcmd
-	jsr spitx
+	SPITX1ST()
 
-rxloop  lda UART+UART_LSR
+rxloop  lda uart+UART_LSR
         bpl dotx
-        lda UART+UART_DATA      ; advance fifo rd ptr to clear rx err
+        lda uart+UART_DATA      ; advance fifo rd ptr to clear rx err
 	bra rxloop
 dotx
         lsr
         bcc endrx
 
-        lda UART+UART_DATA
+        lda uart+UART_DATA
 
-	jsr spitx
+	SPITX()
 
         bra rxloop
 
-endrx	jsr spidesel
+endrx	SPIDESEL()
 	.)
 
-	bra rxtxloop
+	jmp rxtxloop
 
 
 	.)
 	;-----------------------------------------------------------------
-
-exit	sec
-	brk
 
 
 	; transfer buffers and pointers
@@ -163,6 +195,15 @@ s0_rx_buf = towifibuf
 s0_rx_wp  = towifi_wp
 s0_rx_rp  = towifi_rp
 
+; definitions for the serial 1 - same as for 0, for testing only
+s1_tx_buf = fromwifibuf
+s1_tx_wp  = fromwifi_wp
+s1_tx_rp  = fromwifi_rp
+
+s1_rx_buf = towifibuf
+s1_rx_wp  = towifi_wp
+s1_rx_rp  = towifi_rp
+
 
 ; definition for spi uart
 u0_tx_buf = towifibuf
@@ -175,9 +216,8 @@ u0_rx_rp  = fromwifi_rp
 
 
 
-#include "upetspi.a65"
 
-#define	S0_ONLY
+;#define	S0_ONLY
 #include "seruart.a65"
 
 #include "spiuart.a65"

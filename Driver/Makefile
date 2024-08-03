@@ -1,5 +1,5 @@
 
-FILES=wificfg proghelper
+FILES=wificfg proghelper sendbrk
 
 
 all: $(FILES)
