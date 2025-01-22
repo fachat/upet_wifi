@@ -11,7 +11,9 @@ To connect to the main board, this breakout board uses a dual-UART SC16IS752 tha
 ## Build
 
 This repository contains the KiCad schematics and PCB layout, as well as gerber files (gerbers directory). and the interactive BOM (bom directory).
-Also, in the bom directory is a full XLSX format BOM with manufacturer and Mouser part numbers, that you can upload to your favourite parts provider.
+Also, in the bom directory is a full XLSX format BOM with manufacturer and Mouser and JLCPCB part numbers, that you can upload to your favourite parts provider.
 
 ![3D view of the board](images/3dview.png)
+[Schematics PDF](UPET-Wifi-Schematics.pdf)
+[Board PDF](UPET-Wifi-Board.pdf)
 
