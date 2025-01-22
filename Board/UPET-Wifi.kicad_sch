@@ -3137,7 +3137,7 @@
 		)
 	)
 	(junction
-		(at 76.2 158.75)
+		(at 86.36 148.59)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "0801d9b9-282a-4bf1-91db-2a9f7a454c11")
@@ -3165,6 +3165,12 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "40730e9b-0445-46db-aa18-f5cc9d805f88")
+	)
+	(junction
+		(at 255.27 87.63)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "51cc7985-3465-436d-8976-e2fcb794b9cc")
 	)
 	(junction
 		(at 190.5 115.57)
@@ -3245,7 +3251,7 @@
 		(uuid "ce9e3586-5745-4eee-9ba6-daa1234e6c7b")
 	)
 	(junction
-		(at 76.2 140.97)
+		(at 86.36 130.81)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "d1530b23-302d-4b46-9699-5b77c11221e1")
@@ -3272,7 +3278,7 @@
 	)
 	(wire
 		(pts
-			(xy 86.36 149.86) (xy 95.25 149.86)
+			(xy 96.52 139.7) (xy 105.41 139.7)
 		)
 		(stroke
 			(width 0)
@@ -3442,6 +3448,16 @@
 	)
 	(wire
 		(pts
+			(xy 255.27 77.47) (xy 255.27 87.63)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "2094d24a-623f-4014-a97d-6e03ce86ac05")
+	)
+	(wire
+		(pts
 			(xy 210.82 130.81) (xy 187.96 130.81)
 		)
 		(stroke
@@ -3462,7 +3478,7 @@
 	)
 	(wire
 		(pts
-			(xy 76.2 138.43) (xy 76.2 140.97)
+			(xy 86.36 128.27) (xy 86.36 130.81)
 		)
 		(stroke
 			(width 0)
@@ -3479,6 +3495,16 @@
 			(type default)
 		)
 		(uuid "2c7a6c14-74e7-492c-aac7-6e5327605ea6")
+	)
+	(wire
+		(pts
+			(xy 255.27 87.63) (xy 271.78 87.63)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "2e51758e-5134-4bf3-9da9-8c3f9ba29ed3")
 	)
 	(wire
 		(pts
@@ -3532,7 +3558,7 @@
 	)
 	(wire
 		(pts
-			(xy 76.2 140.97) (xy 55.88 140.97)
+			(xy 86.36 130.81) (xy 66.04 130.81)
 		)
 		(stroke
 			(width 0)
@@ -3942,7 +3968,7 @@
 	)
 	(wire
 		(pts
-			(xy 55.88 140.97) (xy 55.88 144.78)
+			(xy 66.04 130.81) (xy 66.04 134.62)
 		)
 		(stroke
 			(width 0)
@@ -3992,6 +4018,16 @@
 	)
 	(wire
 		(pts
+			(xy 242.57 77.47) (xy 241.3 77.47)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "7a588fe5-aa90-4515-968f-fa236e075812")
+	)
+	(wire
+		(pts
 			(xy 88.9 69.85) (xy 88.9 87.63)
 		)
 		(stroke
@@ -4022,7 +4058,7 @@
 	)
 	(wire
 		(pts
-			(xy 76.2 157.48) (xy 76.2 158.75)
+			(xy 86.36 147.32) (xy 86.36 148.59)
 		)
 		(stroke
 			(width 0)
@@ -4052,7 +4088,7 @@
 	)
 	(wire
 		(pts
-			(xy 55.88 158.75) (xy 55.88 152.4)
+			(xy 66.04 148.59) (xy 66.04 142.24)
 		)
 		(stroke
 			(width 0)
@@ -4292,7 +4328,7 @@
 	)
 	(wire
 		(pts
-			(xy 95.25 92.71) (xy 110.49 92.71)
+			(xy 105.41 92.71) (xy 110.49 92.71)
 		)
 		(stroke
 			(width 0)
@@ -4382,7 +4418,7 @@
 	)
 	(wire
 		(pts
-			(xy 76.2 158.75) (xy 76.2 161.29)
+			(xy 86.36 148.59) (xy 86.36 151.13)
 		)
 		(stroke
 			(width 0)
@@ -4402,7 +4438,17 @@
 	)
 	(wire
 		(pts
-			(xy 76.2 140.97) (xy 76.2 142.24)
+			(xy 250.19 77.47) (xy 255.27 77.47)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ceab114d-992b-41e1-9f1a-07c417e10ae4")
+	)
+	(wire
+		(pts
+			(xy 86.36 130.81) (xy 86.36 132.08)
 		)
 		(stroke
 			(width 0)
@@ -4482,6 +4528,16 @@
 	)
 	(wire
 		(pts
+			(xy 241.3 77.47) (xy 241.3 87.63)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "df356df8-2024-420b-bf84-89774d3c8a98")
+	)
+	(wire
+		(pts
 			(xy 238.76 48.26) (xy 238.76 45.72)
 		)
 		(stroke
@@ -4552,7 +4608,7 @@
 	)
 	(wire
 		(pts
-			(xy 95.25 149.86) (xy 95.25 92.71)
+			(xy 105.41 139.7) (xy 105.41 92.71)
 		)
 		(stroke
 			(width 0)
@@ -4612,7 +4668,7 @@
 	)
 	(wire
 		(pts
-			(xy 250.19 87.63) (xy 271.78 87.63)
+			(xy 250.19 87.63) (xy 255.27 87.63)
 		)
 		(stroke
 			(width 0)
@@ -4732,7 +4788,7 @@
 	)
 	(wire
 		(pts
-			(xy 76.2 158.75) (xy 55.88 158.75)
+			(xy 86.36 148.59) (xy 66.04 148.59)
 		)
 		(stroke
 			(width 0)
@@ -4770,9 +4826,9 @@
 		)
 		(uuid "196d9189-94f1-428b-b377-4c17b23c4da4")
 	)
-	(text "1.1A:\n- replace WROOM-02D with ESP32-C3-WROOM-02-N4\n- replace SC16IS740 with SC16IS752 Dual UART\n1.2A:\n- have separate ESP programming header w/ 3.3V adaption\n- reuse UARTB of SC16IS740 with separate header\n- pullup on GPIO08 to boot into serial d/l mode"
+	(text "1.1A:\n- replace WROOM-02D with ESP32-C3-WROOM-02-N4\n- replace SC16IS740 with SC16IS752 Dual UART\n1.2A:\n- have separate ESP programming header w/ 3.3V adaption\n- reuse UARTB of SC16IS740 with separate header\n- pullup on GPIO08 to boot into serial d/l mode\n1.3A:\n- wider serial connectors\n- allow use of /RTS and /DTR for ESP control\n- Programming serial option 3.3V/5V via JP3"
 		(exclude_from_sim no)
-		(at 66.04 184.15 0)
+		(at 38.862 177.8 0)
 		(effects
 			(font
 				(size 2 2)
@@ -4781,7 +4837,17 @@
 		)
 		(uuid "361a8b32-2c31-4b9e-8d23-e32abbceb057")
 	)
-	(text "UPET-WIFI-1.2A\n"
+	(text "Short JP3 if\nProgramming\nwith 3.3V"
+		(exclude_from_sim no)
+		(at 253.492 73.152 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "6af65344-3232-4503-8d15-a9615d2f0c79")
+	)
+	(text "UPET-WIFI-1.3A\n"
 		(exclude_from_sim no)
 		(at 207.01 170.688 0)
 		(effects
@@ -4791,7 +4857,7 @@
 		)
 		(uuid "d948bfd4-4257-4b52-8233-6f591a1c7834")
 	)
-	(text "UPET-WIFI-1.2A-20240801\n"
+	(text "UPET-WIFI-1.3A-20250122"
 		(exclude_from_sim no)
 		(at 216.916 189.992 0)
 		(effects
@@ -5319,7 +5385,7 @@
 	)
 	(symbol
 		(lib_id "Oscillator:XUX71")
-		(at 76.2 149.86 0)
+		(at 86.36 139.7 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -5328,7 +5394,7 @@
 		(fields_autoplaced yes)
 		(uuid "212c5efa-2ed9-4813-9fc1-4254576009d4")
 		(property "Reference" "U3"
-			(at 78.3941 139.7 0)
+			(at 88.5541 129.54 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5337,7 +5403,7 @@
 			)
 		)
 		(property "Value" "1.8432 MHz"
-			(at 78.3941 142.24 0)
+			(at 88.5541 132.08 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5346,7 +5412,7 @@
 			)
 		)
 		(property "Footprint" "Oscillator:Oscillator_SMD_IDT_JU6-6_7.0x5.0mm_P2.54mm"
-			(at 77.47 158.75 0)
+			(at 87.63 148.59 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5355,7 +5421,7 @@
 			)
 		)
 		(property "Datasheet" "https://www.renesas.com/us/en/document/dst/xu-family-low-phase-noise-quartz-based-pll-oscillators-datasheet"
-			(at 66.04 132.08 0)
+			(at 76.2 121.92 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5364,7 +5430,7 @@
 			)
 		)
 		(property "Description" "Low phase noise, quartz-based PLL oscillator, 0.016-1500 MHz, complementary output"
-			(at 76.2 149.86 0)
+			(at 86.36 139.7 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6336,7 +6402,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 76.2 161.29 0)
+		(at 86.36 151.13 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -6345,7 +6411,7 @@
 		(fields_autoplaced yes)
 		(uuid "70a38358-bfdf-4ce1-9209-ff7e1c931ea7")
 		(property "Reference" "#PWR08"
-			(at 76.2 167.64 0)
+			(at 86.36 157.48 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6354,7 +6420,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 76.2 166.37 0)
+			(at 86.36 156.21 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6362,7 +6428,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 76.2 161.29 0)
+			(at 86.36 151.13 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6371,7 +6437,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 76.2 161.29 0)
+			(at 86.36 151.13 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6380,7 +6446,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 76.2 161.29 0)
+			(at 86.36 151.13 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6395,6 +6461,74 @@
 			(project "UPET-Wifi"
 				(path "/f84449d7-983f-4b4b-88bd-503f175f0b89"
 					(reference "#PWR08")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Jumper:SolderJumper_2_Open")
+		(at 246.38 77.47 180)
+		(unit 1)
+		(exclude_from_sim yes)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(uuid "71cbd9da-cc7c-428e-903b-f8b63bf51273")
+		(property "Reference" "JP3"
+			(at 246.126 81.026 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "SolderJumper_2_Open"
+			(at 275.336 67.056 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Footprint" "Jumper:SolderJumper-2_P1.3mm_Open_RoundedPad1.0x1.5mm"
+			(at 246.38 77.47 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 246.38 77.47 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Solder Jumper, 2-pole, open"
+			(at 246.38 77.47 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "2d822f7c-1754-481c-91c0-b24d41bb120f")
+		)
+		(pin "2"
+			(uuid "919accb8-e34f-4bce-8c9c-5ebe3715c51b")
+		)
+		(instances
+			(project "UPET-Wifi"
+				(path "/f84449d7-983f-4b4b-88bd-503f175f0b89"
+					(reference "JP3")
 					(unit 1)
 				)
 			)
@@ -6548,10 +6682,9 @@
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "8777c287-0617-49a4-bc7f-54a0b499eae0")
 		(property "Reference" "R2"
-			(at 246.38 81.28 90)
+			(at 244.856 84.328 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6559,7 +6692,7 @@
 			)
 		)
 		(property "Value" "1k"
-			(at 246.38 83.82 90)
+			(at 248.666 84.328 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7187,7 +7320,7 @@
 	)
 	(symbol
 		(lib_id "Device:C")
-		(at 55.88 148.59 0)
+		(at 66.04 138.43 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -7196,7 +7329,7 @@
 		(fields_autoplaced yes)
 		(uuid "db39c72f-6044-4e3e-8fed-b8257576715b")
 		(property "Reference" "C3"
-			(at 59.69 147.3199 0)
+			(at 69.85 137.1599 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7205,7 +7338,7 @@
 			)
 		)
 		(property "Value" "0.1u"
-			(at 59.69 149.8599 0)
+			(at 69.85 139.6999 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7214,7 +7347,7 @@
 			)
 		)
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder"
-			(at 56.8452 152.4 0)
+			(at 67.0052 142.24 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7223,7 +7356,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 55.88 148.59 0)
+			(at 66.04 138.43 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7232,7 +7365,7 @@
 			)
 		)
 		(property "Description" "Unpolarized capacitor"
-			(at 55.88 148.59 0)
+			(at 66.04 138.43 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7547,7 +7680,7 @@
 	)
 	(symbol
 		(lib_id "power:VCC")
-		(at 76.2 138.43 0)
+		(at 86.36 128.27 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -7556,7 +7689,7 @@
 		(fields_autoplaced yes)
 		(uuid "f9fc195b-bc96-4211-b297-fd6fcfeb2b59")
 		(property "Reference" "#PWR07"
-			(at 76.2 142.24 0)
+			(at 86.36 132.08 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7565,7 +7698,7 @@
 			)
 		)
 		(property "Value" "VCC"
-			(at 76.2 133.35 0)
+			(at 86.36 123.19 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7573,7 +7706,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 76.2 138.43 0)
+			(at 86.36 128.27 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7582,7 +7715,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 76.2 138.43 0)
+			(at 86.36 128.27 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7591,7 +7724,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"VCC\""
-			(at 76.2 138.43 0)
+			(at 86.36 128.27 0)
 			(effects
 				(font
 					(size 1.27 1.27)
