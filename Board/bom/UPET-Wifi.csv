@@ -1,8 +1,0 @@
-"Id";"Designator";"Footprint";"Quantity";"Designation";"Supplier and ref";
-1;"C3,C1,C2";"C_0603_1608Metric_Pad1.08x0.95mm_HandSolder";3;"0.1u";;;
-2;"U1";"ESP32-C3-WROOM-02";1;"ESP32-C3-WROOM-02";;;
-3;"U2";"TSSOP-28_4.4x9.7mm_P0.65mm";1;"SC16IS752IPW";;;
-4;"U$1";"UPET_NETSPI";1;"uPET NET SPI";;;
-5;"R1";"R_0603_1608Metric_Pad0.98x0.95mm_HandSolder";1;"10k";;;
-6;"C4";"C_0603_1608Metric_Pad1.08x0.95mm_HandSolder";1;"10u";;;
-7;"U3";"Oscillator_SMD_IDT_JU6-6_7.0x5.0mm_P2.54mm";1;"1.8432 MHz";;;
